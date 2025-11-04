@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Riverscape — three.js + Vite</title>
+    <link rel="icon" href="data:,">
+    <style>
+      html, body, #app { height: 100%; margin: 0; }
+      body {
+        overflow: hidden;
+        /* Approximate the A-Frame threeColorGradientShader colors */
+        background: linear-gradient(to bottom, #ffae5a 0%, #fff8b9 50%, #ffffbd 100%);
+      }
+      #app { position: absolute; inset: 0; }
+
+      /* SOMA FM player button */
+      #soma-toggle {
+        position: fixed;
+        left: 16px;
+        bottom: 16px;
+        z-index: 1000;
+        width: 56px;
+        height: 56px;
+        border-radius: 50%;
+        background: rgba(17,17,17,0.95);
+        color: #fff;
+        border: 0;
+        box-shadow: 0 6px 18px rgba(0,0,0,0.35);
+        font-size: 22px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        opacity: 0.95;
+        transition: transform 120ms ease, background 180ms ease;
+        -webkit-tap-highlight-color: transparent;
+      }
+      #soma-toggle:active {
+        transform: scale(0.98);
+      }
+      #soma-toggle.soma-error {
+        background: #b00020;
+      }
+      /* Slightly larger touch target on small screens */
+      @media (max-width: 520px) {
+        #soma-toggle {
+          width: 64px;
+          height: 64px;
+          font-size: 26px;
+          left: 12px;
+          bottom: 12px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div id="app"></div>
+    <button id="soma-toggle" aria-pressed="false" aria-label="Play Synphaera Radio">►</button>
+    <script type="module" src="/src/main.js"></script>
+
+    <script>
+      // Minimal SOMA FM player for "Synphaera Radio"
+      // Uses the MP3 stream endpoint (128kbps)
+      (function () {
+        const STREAM_URL = 'https://ice.somafm.com/synphaera-128-mp3';
+        const btn = document.getElementById('soma-toggle');
+
+        // Create Audio element but don't preload until user interaction
+        const audio = new Audio();
+        audio.src = STREAM_URL;
+        audio.preload = 'none';
+        audio.crossOrigin = 'anonymous';
+        audio.volume = 0.8;
+
+        let playing = false;
+
+        function setPlayingState(isPlaying) {
+          playing = !!isPlaying;
+          if (playing) {
+            btn.textContent = '■';
+            btn.setAttribute('aria-pressed', 'true');
+          } else {
+            btn.textContent = '►';
+            btn.setAttribute('aria-pressed', 'false');
+          }
+        }
+
+        btn.addEventListener('click', () => {
+          if (!playing) {
+            // Start playback (user gesture)
+            // Some browsers require user interaction; this click satisfies that.
+            const playPromise = audio.play();
+            if (playPromise !== undefined) {
+              playPromise.then(() => {
+                setPlayingState(true);
+              }).catch((err) => {
+                console.error('SOMA FM playback failed:', err);
+                // Flash error state on the button
+                btn.classList.add('soma-error');
+                setTimeout(() => btn.classList.remove('soma-error'), 1400);
+              });
+            } else {
+              // Older browsers: assume playback started
+              setPlayingState(true);
+            }
+          } else {
+            audio.pause();
+            try {
+              audio.currentTime = 0;
+            } catch (e) {
+              // some streams don't support setting currentTime
+            }
+            setPlayingState(false);
+          }
+        });
+
+        // Keep UI in sync with audio events
+        audio.addEventListener('ended', () => setPlayingState(false));
+        audio.addEventListener('pause', () => {
+          // If paused by code or network, reflect state unless ended
+          if (!audio.ended) setPlayingState(false);
+        });
+      })();
+    </script>
+  </body>
+</html>

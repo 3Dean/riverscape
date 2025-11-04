@@ -1,0 +1,32 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Riverscape</title>
+    <link rel="icon" href="data:,">
+    <script type="module" src="/src/main.js"></script>
+  </head>
+  <body>
+    <a-scene fog="type: linear; color: #ffc974; far: 300; near: 0">
+      <a-assets>
+        <a-asset-item id="watered" src="/water.gltf"></a-asset-item>
+        <a-asset-item id="hawk-gltf" src="https://aws-website-studiob-x-dqxqd.s3.amazonaws.com/assets/canyon/assets/hawkanimate13.glb"></a-asset-item>
+        <a-asset-item id="canyon-gltf" src="https://aws-website-studiob-x-dqxqd.s3.amazonaws.com/assets/canyon/assets/canyonlargeopt.glb"></a-asset-item>
+      </a-assets>
+
+      <a-gltf-model id="water2" src="#watered" position="0 -420 -5" aniwater></a-gltf-model>
+      <a-entity id="canyon" gltf-model="#canyon-gltf" position="0 -420 0" scale="1 1 1" animation="property: rotation; to: 360 0 0; loop: true; dur: 460000; loop: true; easing: linear"></a-entity>
+      <a-entity light="type: hemisphere; color: #f99f36; groundColor: #ad42cc; intensity: 1"></a-entity>
+      <a-entity light="type: directional; color: #ffc67c; intensity: 0.5" position="0 2 -10"></a-entity>
+      <a-entity id="hawk" gltf-model="#hawk-gltf" animation-mixer position="0 0 -5" rotation="0 180 -6" scale="0.125 0.125 0.125"
+        animation__pos="property: position; dir: alternate; dur: 4800;
+                        easing: easeInOutSine; loop: true; to: 0 -.5 -6"
+        animation__rot="property: rotation; dir: alternate; dur: 4000;
+                        easing: easeInOutSine; loop: true; to: 22 180 5.5"></a-entity>
+      <a-sky material="shader:threeColorGradientShader;topColor:#ffae5a;middleColor:#fff8b9;bottomColor:#ffffbd"></a-sky>
+    </a-scene>
+
+    <iframe width="100%" height="166" scrolling="no" frameborder="no" allow="autoplay; encrypted-media" src="https://w.soundcloud.com/player/?url=https%3A//api.soundcloud.com/tracks/326563700&color=%23ff5500&auto_play=true"></iframe>
+  </body>
+</html>
