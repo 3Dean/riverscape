@@ -14,7 +14,7 @@
     "three.js",
     "boilerplate"
   ],
-  "author": "",
+  "author": "Dean Yeager",
   "license": "MIT",
   "dependencies": {
     "three": "^0.156.0"
