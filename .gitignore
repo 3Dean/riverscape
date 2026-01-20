@@ -15,3 +15,8 @@ pnpm-debug.log*
 coverage/
 .cache/
 *.log
+
+# amplify
+.amplify
+amplify_outputs*
+amplifyconfiguration*
