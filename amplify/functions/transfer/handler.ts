@@ -15,31 +15,9 @@ type AppSyncEvent = {
   };
 };
 
-type OwnershipRecord = {
-  artworkId: string;
-  ownerSub?: string | null;
-  status?: "UNCLAIMED" | "OWNED" | null;
-};
+let client: any | null = null;
 
-type TransferCodeRecord = {
-  code: string;
-  artworkId: string;
-  createdBySub: string;
-  expiresAt: string;
-  usedAt?: string | null;
-};
-
-type ArtworkPublicRecord = {
-  artworkId: string;
-  scenePath: string;
-  status?: "UNCLAIMED" | "OWNED" | null;
-};
-
-type GetResult<T> = { data?: T | null };
-
-let client: ReturnType<typeof generateClient> | null = null;
-
-async function getClient() {
+async function getClient(): Promise<any> {
   if (client) {
     return client;
   }
@@ -95,9 +73,7 @@ async function handleCreateTransfer(event: AppSyncEvent) {
   const artworkId = asString(event.arguments?.artworkId, "artworkId");
   const ttlMinutes = asOptionalInt(event.arguments?.ttlMinutes, 10);
 
-  const ownership = (await client.models.Ownership.get({
-    artworkId,
-  })) as GetResult<OwnershipRecord>;
+  const ownership = await client.models.Ownership.get({ artworkId });
   if (!ownership.data || ownership.data.ownerSub !== ownerSub) {
     throw new Error("Only the current owner can transfer this artwork");
   }
@@ -126,9 +102,7 @@ async function handleClaimTransfer(event: AppSyncEvent) {
   const claimantSub = requireSub(event);
   const code = asString(event.arguments?.code, "code");
 
-  const transfer = (await client.models.TransferCode.get({
-    code,
-  })) as GetResult<TransferCodeRecord>;
+  const transfer = await client.models.TransferCode.get({ code });
   if (!transfer.data) {
     throw new Error("Invalid transfer code");
   }
@@ -143,9 +117,7 @@ async function handleClaimTransfer(event: AppSyncEvent) {
   }
 
   const artworkId = transfer.data.artworkId;
-  const ownership = (await client.models.Ownership.get({
-    artworkId,
-  })) as GetResult<OwnershipRecord>;
+  const ownership = await client.models.Ownership.get({ artworkId });
   if (
     ownership.data?.ownerSub &&
     ownership.data.ownerSub !== transfer.data.createdBySub
@@ -153,9 +125,7 @@ async function handleClaimTransfer(event: AppSyncEvent) {
     throw new Error("Transfer code no longer valid");
   }
 
-  const artwork = (await client.models.ArtworkPublic.get({
-    artworkId,
-  })) as GetResult<ArtworkPublicRecord>;
+  const artwork = await client.models.ArtworkPublic.get({ artworkId });
   if (!artwork.data) {
     throw new Error("Artwork not found");
   }
@@ -197,16 +167,12 @@ async function handleClaimUnclaimed(event: AppSyncEvent) {
   const claimantSub = requireSub(event);
   const artworkId = asString(event.arguments?.artworkId, "artworkId");
 
-  const artwork = (await client.models.ArtworkPublic.get({
-    artworkId,
-  })) as GetResult<ArtworkPublicRecord>;
+  const artwork = await client.models.ArtworkPublic.get({ artworkId });
   if (!artwork.data) {
     throw new Error("Artwork not found");
   }
 
-  const ownership = (await client.models.Ownership.get({
-    artworkId,
-  })) as GetResult<OwnershipRecord>;
+  const ownership = await client.models.Ownership.get({ artworkId });
   if (ownership.data?.status === "OWNED") {
     throw new Error("Artwork already claimed");
   }

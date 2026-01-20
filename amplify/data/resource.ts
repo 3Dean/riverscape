@@ -33,7 +33,15 @@ const schema = a
       expiresAt: a.datetime().required(),
       usedAt: a.datetime(),
     })
-    .identifier(["code"]),
+    .identifier(["code"])
+    .authorization((allow) => [
+      allow.ownerDefinedIn("createdBySub").to([
+        "create",
+        "read",
+        "update",
+        "delete",
+      ]),
+    ]),
 
   TransferCreateResult: a.customType({
     code: a.string().required(),
